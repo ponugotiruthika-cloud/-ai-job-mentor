@@ -1,0 +1,448 @@
+/* ==========================================================================
+   AI Job Mentor for Informal Workers — Main Stylesheet
+   Modern, responsive, dark-mode-ready design
+   ========================================================================== */
+
+/* ── CSS Variables ─────────────────────────────────────────────────────── */
+:root {
+  --primary: #4361ee;
+  --primary-light: #eef0fd;
+  --secondary: #7209b7;
+  --success: #06d6a0;
+  --warning: #ffd166;
+  --danger: #ef476f;
+  --info: #118ab2;
+  --dark: #1a1a2e;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --bg: #ffffff;
+  --bg-surface: #f8f9fa;
+  --border: #e5e7eb;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,.14);
+  --radius: 16px;
+  --font: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-hi: 'Noto Sans Devanagari', 'Inter', sans-serif;
+  --font-te: 'Noto Sans Telugu', 'Inter', sans-serif;
+  --transition: 0.22s cubic-bezier(.4,0,.2,1);
+  --navbar-bg: rgba(255,255,255,0.97);
+  --footer-bg: #f0f2f8;
+}
+
+/* ── Dark Mode Variables ───────────────────────────────────────────────── */
+body.dark-mode,
+[data-bs-theme="dark"] {
+  --bg: #0f1117;
+  --bg-surface: #1a1d2e;
+  --border: #2d3150;
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+  --navbar-bg: rgba(15,17,23,0.97);
+  --footer-bg: #0d0f1a;
+  --primary-light: #1e2346;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.35);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,.5);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  transition: background var(--transition), color var(--transition);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main { flex: 1 0 auto; }
+
+/* ── Navbar ────────────────────────────────────────────────────────────── */
+#main-navbar {
+  background: var(--navbar-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: background var(--transition);
+}
+
+.dark-mode #main-navbar { border-bottom-color: var(--border); }
+
+.brand-icon { font-size: 1.5rem; }
+.brand-text {
+  font-weight: 800;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-link {
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem !important;
+  transition: all var(--transition);
+  color: var(--text) !important;
+}
+
+.nav-link:hover, .nav-link.active {
+  background: var(--primary-light);
+  color: var(--primary) !important;
+}
+
+/* ── Hero Section ──────────────────────────────────────────────────────── */
+.hero-section {
+  background: linear-gradient(135deg, #eef0fd 0%, #f5f0ff 40%, #fef3c7 100%);
+  position: relative;
+}
+
+.dark-mode .hero-section {
+  background: linear-gradient(135deg, #1a1d2e 0%, #1e1630 40%, #1a180a 100%);
+}
+
+.hero-bg-animation {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(67,97,238,.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(114,9,183,.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.min-vh-50 { min-height: 50vh; }
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Chat Preview Card ─────────────────────────────────────────────────── */
+.chat-preview-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  max-width: 420px;
+  margin: 0 auto;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ── Chat Bubbles ──────────────────────────────────────────────────────── */
+.chat-bubble {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  border-radius: 18px;
+  max-width: 85%;
+  line-height: 1.5;
+  font-size: 0.875rem;
+}
+
+.ai-bubble {
+  background: var(--primary-light);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
+
+.user-bubble {
+  background: var(--primary);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.dark-mode .ai-bubble {
+  background: #1e2346;
+  color: var(--text);
+}
+
+/* ── Quick Chat Box ────────────────────────────────────────────────────── */
+.quick-chat-box {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--bg-surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+/* ── Worker Type Cards ─────────────────────────────────────────────────── */
+.worker-type-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+
+.icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Feature Cards ─────────────────────────────────────────────────────── */
+.feature-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+
+/* ── Job Cards ─────────────────────────────────────────────────────────── */
+.job-card, .job-card-mini {
+  background: var(--bg);
+  transition: all var(--transition);
+}
+
+.job-card-mini {
+  background: var(--bg-surface);
+}
+
+/* ── Scheme Cards ──────────────────────────────────────────────────────── */
+.scheme-card {
+  background: var(--bg);
+  border-left: 4px solid var(--warning) !important;
+}
+
+/* ── Hover Lift Effect ─────────────────────────────────────────────────── */
+.hover-lift {
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* ── Dashboard Welcome Banner ──────────────────────────────────────────── */
+.dashboard-welcome-banner {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: white;
+}
+
+.btn-white {
+  background: white;
+  color: var(--primary);
+  border: none;
+  font-weight: 600;
+}
+
+.btn-white:hover { background: #f0f0f0; color: var(--primary); }
+
+/* ── Stat Cards ────────────────────────────────────────────────────────── */
+.stat-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+
+/* ── Chat Sidebar ──────────────────────────────────────────────────────── */
+.chat-sidebar {
+  background: var(--bg-surface);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.chat-header {
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.chat-input-area {
+  background: var(--bg);
+  position: sticky;
+  bottom: 0;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+#main-footer {
+  background: var(--footer-bg);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.footer-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--transition);
+  display: block;
+  margin-bottom: 4px;
+}
+.footer-link:hover { color: var(--primary); }
+
+/* ── Background Variations ─────────────────────────────────────────────── */
+.bg-light-custom {
+  background: var(--bg-surface) !important;
+}
+
+/* ── CTA Section ───────────────────────────────────────────────────────── */
+.cta-section {
+  background: linear-gradient(135deg, var(--primary-light), #f5f0ff);
+}
+.dark-mode .cta-section {
+  background: linear-gradient(135deg, #1e2346, #1e1630);
+}
+
+/* ── Search Card ───────────────────────────────────────────────────────── */
+.search-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+/* ── Pathway Cards ─────────────────────────────────────────────────────── */
+.pathway-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+
+.pathway-steps {
+  margin-top: 0.5rem;
+  line-height: 1.8;
+}
+
+/* ── Animate Utilities ─────────────────────────────────────────────────── */
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-left  { animation: fadeInLeft  0.6s ease both; }
+.animate-fade-in-right { animation: fadeInRight 0.6s ease both; }
+.animate-fade-in       { animation: fadeIn      0.5s ease both; }
+.animate-slide-up      { animation: slideUp     0.5s ease calc(var(--delay, 0s)) both; }
+
+/* ── Animate Button ────────────────────────────────────────────────────── */
+.animate-btn {
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.animate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(67,97,238,.3);
+}
+
+/* ── Dark Mode Overrides ───────────────────────────────────────────────── */
+body.dark-mode .card,
+body.dark-mode .job-card,
+body.dark-mode .scheme-card,
+body.dark-mode .feature-card,
+body.dark-mode .worker-type-card,
+body.dark-mode .stat-card,
+body.dark-mode .pathway-card,
+body.dark-mode .search-card {
+  background: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select,
+body.dark-mode .input-group-text {
+  background: var(--dark) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+body.dark-mode .form-control::placeholder { color: var(--text-muted); }
+
+body.dark-mode .bg-light,
+body.dark-mode .job-card-mini {
+  background: #1a1d2e !important;
+}
+
+body.dark-mode .list-group-item {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border) !important;
+}
+
+body.dark-mode .list-group-item:hover { background: rgba(255,255,255,.04); }
+
+body.dark-mode .alert-success {
+  background: #0d2e1e !important;
+  color: #6ee7b7 !important;
+}
+
+body.dark-mode .table { --bs-table-bg: var(--bg-surface); color: var(--text); }
+
+body.dark-mode .badge.bg-light { background: #2d3150 !important; }
+
+body.dark-mode .navbar-toggler { border-color: var(--border); }
+body.dark-mode .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+body.dark-mode .dropdown-menu {
+  background: var(--bg-surface);
+  border-color: var(--border);
+}
+body.dark-mode .dropdown-item { color: var(--text); }
+body.dark-mode .dropdown-item:hover { background: rgba(255,255,255,.06); }
+
+body.dark-mode .chat-header,
+body.dark-mode .chat-input-area {
+  background: var(--bg-surface);
+}
+
+body.dark-mode .chat-sidebar { background: var(--bg); }
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Purple Color Utility ──────────────────────────────────────────────── */
+.text-purple { color: #7209b7 !important; }
+.bg-purple-subtle { background: #f3e8fd !important; }
+
+/* ── Page Header ───────────────────────────────────────────────────────── */
+.page-header {
+  padding: 0.5rem 0 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+/* ── Mobile-first Responsive Tweaks ───────────────────────────────────── */
+@media (max-width: 576px) {
+  .brand-text { font-size: 0.95rem; }
+  .display-4 { font-size: 1.9rem; }
+  .chat-bubble { max-width: 95%; }
+  .hero-card-wrapper { padding: 0 1rem; }
+  .chat-preview-card { animation: none; }
+}
+
+@media (max-width: 768px) {
+  .stat-card .fs-4 { font-size: 1.3rem !important; }
+  .dashboard-welcome-banner { padding: 1.5rem !important; }
+}
+
+/* ── Reduced Motion ────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

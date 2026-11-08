@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Government Schemes — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <div class="page-header mb-4">
+    <h2 class="fw-bold mb-1"><i class="bi bi-bank me-2 text-warning"></i>Government Schemes</h2>
+    <p class="text-muted mb-0">Discover welfare schemes, subsidies, and support programs you are eligible for</p>
+  </div>
+
+  <!-- Eligibility Checker CTA -->
+  <div class="alert border-0 rounded-4 mb-4 d-flex align-items-center gap-3" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">
+    <div class="fs-2">🤖</div>
+    <div class="flex-grow-1">
+      <strong>Not sure which schemes apply to you?</strong>
+      <p class="mb-1 small text-muted">Ask the AI Mentor — describe your work and it will tell you exactly which schemes you qualify for.</p>
+    </div>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('chatbot') }}" class="btn btn-warning rounded-pill flex-shrink-0">Ask AI Mentor</a>
+    {% else %}
+    <a href="{{ url_for('register') }}" class="btn btn-warning rounded-pill flex-shrink-0">Get Free Guidance</a>
+    {% endif %}
+  </div>
+
+  <!-- Filters -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+      <form method="GET" action="{{ url_for('schemes') }}">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Filter by Category</label>
+            <select name="category" class="form-select">
+              <option value="">All Categories</option>
+              {% for cat in categories %}
+              <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold small">Worker Type</label>
+            <select name="worker_type" class="form-select">
+              <option value="">All Types</option>
+              {% for wt in worker_types %}
+              <option value="{{ wt }}" {% if wt == selected_type %}selected{% endif %}>{{ wt | replace('_',' ') | title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-warning w-100 rounded-pill">Filter</button>
+          </div>
+          <div class="col-md-2">
+            <a href="{{ url_for('schemes') }}" class="btn btn-outline-secondary w-100 rounded-pill">Reset</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Category Badges Quick Filter -->
+  <div class="mb-4 d-flex flex-wrap gap-2">
+    <a href="{{ url_for('schemes') }}" class="badge fs-6 px-3 py-2 rounded-pill text-decoration-none {% if not selected_category %}bg-warning text-dark{% else %}bg-light text-muted border{% endif %}">All</a>
+    {% for cat in categories %}
+    <a href="{{ url_for('schemes') }}?category={{ cat }}" class="badge fs-6 px-3 py-2 rounded-pill text-decoration-none {% if cat == selected_category %}bg-warning text-dark{% else %}bg-light text-muted border{% endif %}">{{ cat }}</a>
+    {% endfor %}
+  </div>
+
+  <!-- Scheme Cards -->
+  <div class="row g-4">
+    {% for scheme in schemes %}
+    <div class="col-md-6 col-lg-4 animate-slide-up" style="--delay: {{ loop.index * 0.08 }}s">
+      <div class="scheme-card card border-0 shadow-sm rounded-4 h-100 hover-lift">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between mb-3">
+            <span class="badge bg-warning-subtle text-warning rounded-pill">{{ scheme.category }}</span>
+            <i class="bi bi-patch-check-fill text-warning" title="Government Scheme"></i>
+          </div>
+          <h5 class="fw-bold mb-2">{{ scheme.name }}</h5>
+          <p class="text-muted small mb-3">{{ (scheme.description or '')[:150] }}{% if (scheme.description or '') | length > 150 %}...{% endif %}</p>
+
+          <!-- Eligibility -->
+          {% if scheme.eligibility %}
+          <div class="mb-3">
+            <span class="fw-semibold small"><i class="bi bi-person-check me-1 text-success"></i>Eligibility:</span>
+            <p class="small text-muted mb-0 mt-1">{{ (scheme.eligibility or '')[:120] }}{% if (scheme.eligibility or '') | length > 120 %}...{% endif %}</p>
+          </div>
+          {% endif %}
+
+          <!-- Benefits -->
+          {% if scheme.benefits %}
+          <div class="mb-3 p-2 rounded-3 bg-success-subtle">
+            <span class="fw-semibold small text-success"><i class="bi bi-gift me-1"></i>Benefits:</span>
+            <p class="small text-success mb-0 mt-1">{{ (scheme.benefits or '')[:130] }}{% if (scheme.benefits or '') | length > 130 %}...{% endif %}</p>
+          </div>
+          {% endif %}
+
+          <div class="d-flex gap-2 mt-auto">
+            {% if scheme.application_url %}
+            <a href="{{ scheme.application_url }}" target="_blank" class="btn btn-sm btn-warning rounded-pill flex-grow-1">
+              Apply Now <i class="bi bi-box-arrow-up-right ms-1"></i>
+            </a>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('chatbot') }}" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ask AI about this scheme">
+              <i class="bi bi-robot"></i> Ask AI
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted">
+      <i class="bi bi-bank fs-1"></i>
+      <p class="mt-2">No schemes found for the selected filters.</p>
+      <a href="{{ url_for('schemes') }}" class="btn btn-outline-warning rounded-pill">View All Schemes</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Additional Resources -->
+  <div class="mt-5 p-4 rounded-4 bg-light-custom">
+    <h4 class="fw-bold mb-4">Additional Resources</h4>
+    <div class="row g-3">
+      {% set resources = [
+        ("https://umang.gov.in", "UMANG App", "Access all government services in one place", "bi-phone"),
+        ("https://csc.gov.in", "Common Service Centres", "Apply for schemes at your nearest CSC", "bi-building"),
+        ("https://labour.gov.in", "Ministry of Labour", "Worker rights, laws and dispute resolution", "bi-scale"),
+        ("https://esic.in", "ESIC Portal", "Health insurance for workers earning ≤₹21,000/month", "bi-heart-pulse"),
+      ] %}
+      {% for url, name, desc, icon in resources %}
+      <div class="col-md-6 col-lg-3">
+        <a href="{{ url }}" target="_blank" class="card border-0 rounded-3 p-3 text-decoration-none hover-lift d-block">
+          <i class="bi {{ icon }} text-primary fs-4 mb-2"></i>
+          <div class="fw-semibold small">{{ name }}</div>
+          <div class="text-muted" style="font-size:12px">{{ desc }}</div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

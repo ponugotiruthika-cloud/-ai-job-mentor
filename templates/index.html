@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — AI Job Mentor for Informal Workers{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section position-relative overflow-hidden">
+  <div class="hero-bg-animation"></div>
+  <div class="container py-5">
+    <div class="row align-items-center min-vh-50 py-4">
+      <div class="col-lg-6 animate-fade-in-left">
+        <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fs-6 fw-semibold">
+          <i class="bi bi-stars me-1"></i>Powered by IBM Watsonx.ai Granite
+        </span>
+        <h1 class="display-4 fw-bold lh-sm mb-4">
+          Your <span class="text-gradient">AI Career Mentor</span><br>
+          for Every Worker
+        </h1>
+        <p class="lead text-muted mb-4">
+          Find jobs, discover government schemes, learn new skills, and get
+          personalised career guidance — all in <strong>English, Hindi & Telugu</strong>.
+          Built for daily wage workers, artisans, gig workers & self-employed individuals.
+        </p>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4 shadow-sm animate-btn">
+            <i class="bi bi-grid me-2"></i>My Dashboard
+          </a>
+          <a href="{{ url_for('chatbot') }}" class="btn btn-outline-primary btn-lg px-4 animate-btn">
+            <i class="bi bi-robot me-2"></i>Chat with AI Mentor
+          </a>
+          {% else %}
+          <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 shadow-sm animate-btn">
+            <i class="bi bi-person-plus me-2"></i>Get Started Free
+          </a>
+          <a href="{{ url_for('jobs') }}" class="btn btn-outline-primary btn-lg px-4 animate-btn">
+            <i class="bi bi-search me-2"></i>Browse Jobs
+          </a>
+          {% endif %}
+        </div>
+        <!-- Stats Bar -->
+        <div class="d-flex flex-wrap gap-4 mt-3">
+          <div class="text-center">
+            <div class="fs-4 fw-bold text-primary">500+</div>
+            <div class="small text-muted">Jobs Listed</div>
+          </div>
+          <div class="vr opacity-25"></div>
+          <div class="text-center">
+            <div class="fs-4 fw-bold text-success">6</div>
+            <div class="small text-muted">Govt Schemes</div>
+          </div>
+          <div class="vr opacity-25"></div>
+          <div class="text-center">
+            <div class="fs-4 fw-bold text-warning">3</div>
+            <div class="small text-muted">Languages</div>
+          </div>
+          <div class="vr opacity-25"></div>
+          <div class="text-center">
+            <div class="fs-4 fw-bold text-danger">AI</div>
+            <div class="small text-muted">Powered</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 mt-5 mt-lg-0 animate-fade-in-right">
+        <div class="hero-card-wrapper">
+          <!-- Mini Chatbot Preview Card -->
+          <div class="chat-preview-card shadow-lg rounded-4 p-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <div class="avatar-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:40px;height:40px">
+                <i class="bi bi-robot fs-5"></i>
+              </div>
+              <div>
+                <div class="fw-semibold">AI Job Mentor</div>
+                <div class="small text-success"><i class="bi bi-circle-fill" style="font-size:8px"></i> Online</div>
+              </div>
+              <span class="badge bg-warning text-dark ms-auto">Granite AI</span>
+            </div>
+            <div class="chat-bubble ai-bubble mb-2">
+              नमस्ते! 👋 I'm your AI Job Mentor. Tell me your skills and location — I'll find the best jobs for you!
+            </div>
+            <div class="chat-bubble user-bubble mb-3">
+              I'm a mason in Hyderabad. Need daily wage work.
+            </div>
+            <div class="chat-bubble ai-bubble mb-2">
+              Great! Found <strong>3 construction jobs near you</strong> paying ₹600–₹800/day. Also, you're eligible for <strong>PMKVY masonry certification</strong> which can increase your earnings! 🏗️
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <input type="text" class="form-control form-control-sm rounded-pill" placeholder="Type in English, Hindi, or Telugu..." disabled>
+              <button class="btn btn-primary btn-sm rounded-pill px-3" disabled>
+                <i class="bi bi-send"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Worker Types Section -->
+<section class="py-5 bg-light-custom">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Who Is This For?</h2>
+      <p class="text-muted">Tailored guidance for every type of informal worker</p>
+    </div>
+    <div class="row g-4">
+      {% set worker_cards = [
+        ("bi-hammer", "Daily Wage Workers", "Construction, agriculture, manual labor — find daily income opportunities near you.", "primary"),
+        ("bi-palette", "Artisans & Craftspeople", "Weavers, potters, carpenters — get market access and PM Vishwakarma benefits.", "warning"),
+        ("bi-scooter", "Gig Workers", "Delivery, ride-share, freelance tasks — maximize your flexible income.", "success"),
+        ("bi-shop", "Self-Employed", "Street vendors, home businesses — access PM SVANidhi loans and growth support.", "danger"),
+        ("bi-house-heart", "Domestic Workers", "Household help, cooks, caregivers — find verified employers and know your rights.", "info"),
+      ] %}
+      {% for icon, title, desc, color in worker_cards %}
+      <div class="col-6 col-md-4 col-lg-2 animate-slide-up" style="--delay: {{ loop.index * 0.1 }}s">
+        <div class="worker-type-card text-center p-4 rounded-4 h-100 hover-lift">
+          <div class="icon-circle bg-{{ color }}-subtle text-{{ color }} mb-3 mx-auto">
+            <i class="bi {{ icon }} fs-4"></i>
+          </div>
+          <h6 class="fw-semibold mb-2">{{ title }}</h6>
+          <p class="small text-muted mb-0">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Everything You Need</h2>
+      <p class="text-muted">AI-powered tools designed for India's 450 million informal workers</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card p-4 rounded-4 h-100 hover-lift">
+          <div class="feature-icon mb-3"><i class="bi bi-search-heart fs-2 text-primary"></i></div>
+          <h5 class="fw-bold">Smart Job Search</h5>
+          <p class="text-muted small">Search by skill, location, and work type. Get nearby job alerts. Voice search in your language.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card p-4 rounded-4 h-100 hover-lift">
+          <div class="feature-icon mb-3"><i class="bi bi-robot fs-2 text-success"></i></div>
+          <h5 class="fw-bold">AI Career Chatbot</h5>
+          <p class="text-muted small">Chat with IBM Granite AI in English, Hindi or Telugu. Get personalised career advice 24/7.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card p-4 rounded-4 h-100 hover-lift">
+          <div class="feature-icon mb-3"><i class="bi bi-bank fs-2 text-warning"></i></div>
+          <h5 class="fw-bold">Government Schemes</h5>
+          <p class="text-muted small">Discover PMKVY, PM SVANidhi, MGNREGS, PM Vishwakarma and other welfare benefits you're eligible for.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card p-4 rounded-4 h-100 hover-lift">
+          <div class="feature-icon mb-3"><i class="bi bi-mortarboard fs-2 text-danger"></i></div>
+          <h5 class="fw-bold">Free Skill Courses</h5>
+          <p class="text-muted small">Find free PMKVY, NSDC, Skill India courses matched to your current skills and career goals.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card p-4 rounded-4 h-100 hover-lift">
+          <div class="feature-icon mb-3"><i class="bi bi-geo-alt fs-2 text-info"></i></div>
+          <h5 class="fw-bold">Nearby Opportunities</h5>
+          <p class="text-muted small">Location-based job and scheme recommendations within your preferred radius. Never miss local work.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4">
+        <div class="feature-card p-4 rounded-4 h-100 hover-lift">
+          <div class="feature-icon mb-3"><i class="bi bi-mic fs-2 text-purple"></i></div>
+          <h5 class="fw-bold">Voice Job Search</h5>
+          <p class="text-muted small">Speak your job query in English, Hindi or Telugu. AI understands and finds matches instantly.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Latest Jobs Section -->
+<section class="py-5 bg-light-custom">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Latest Verified Jobs</h2>
+      <a href="{{ url_for('jobs') }}" class="btn btn-outline-primary">View All <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for job in jobs %}
+      <div class="col-md-6 col-lg-4 animate-slide-up" style="--delay: {{ loop.index * 0.08 }}s">
+        <div class="job-card card border-0 shadow-sm rounded-4 h-100 hover-lift">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <span class="badge bg-{{ 'primary' if job.job_type == 'daily_wage' else 'success' if job.job_type == 'gig' else 'warning text-dark' }}-subtle text-{{ 'primary' if job.job_type == 'daily_wage' else 'success' if job.job_type == 'gig' else 'warning' }}">
+                {{ job.job_type | replace('_', ' ') | title }}
+              </span>
+              {% if job.is_verified %}
+              <span class="badge bg-success-subtle text-success"><i class="bi bi-shield-check me-1"></i>Verified</span>
+              {% endif %}
+            </div>
+            <h5 class="card-title fw-bold mb-1">{{ job.title }}</h5>
+            <p class="text-muted small mb-2">{{ job.company or 'Independent' }}</p>
+            <div class="d-flex align-items-center gap-1 text-muted small mb-2">
+              <i class="bi bi-geo-alt"></i> {{ job.location }}
+            </div>
+            <div class="d-flex align-items-center gap-1 text-success fw-semibold small mb-3">
+              <i class="bi bi-currency-rupee"></i>
+              {{ job.salary_min | currency_inr }} – {{ job.salary_max | currency_inr }}
+            </div>
+            <p class="card-text small text-muted mb-3">{{ (job.description or '')[:90] }}...</p>
+            <a href="{{ url_for('jobs') }}?q={{ job.title }}" class="btn btn-sm btn-primary rounded-pill px-3">
+              Apply Now <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12 text-center text-muted py-4">No jobs listed yet.</div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Govt Schemes Preview -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Key Government Schemes</h2>
+      <a href="{{ url_for('schemes') }}" class="btn btn-outline-warning">View All <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+    <div class="row g-4">
+      {% for scheme in schemes %}
+      <div class="col-md-6 col-lg-3">
+        <div class="scheme-card card border-0 rounded-4 h-100 hover-lift" style="border-left: 4px solid var(--bs-warning) !important;">
+          <div class="card-body p-4">
+            <h6 class="fw-bold mb-2">{{ scheme.name }}</h6>
+            <p class="small text-muted mb-3">{{ (scheme.description or '')[:100] }}...</p>
+            <span class="badge bg-warning-subtle text-warning mb-2">{{ scheme.category }}</span>
+            {% if scheme.application_url %}
+            <a href="{{ scheme.application_url }}" target="_blank" class="btn btn-sm btn-warning d-block mt-2 rounded-pill">
+              Apply <i class="bi bi-box-arrow-up-right ms-1"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+  <div class="container text-center py-4">
+    <h2 class="fw-bold mb-3">Ready to Find Your Next Opportunity?</h2>
+    <p class="lead text-muted mb-4">Join thousands of workers getting AI-powered career guidance for free</p>
+    {% if not current_user.is_authenticated %}
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-5 shadow animate-btn">
+      <i class="bi bi-person-plus me-2"></i>Create Free Account
+    </a>
+    {% else %}
+    <a href="{{ url_for('chatbot') }}" class="btn btn-primary btn-lg px-5 shadow animate-btn">
+      <i class="bi bi-robot me-2"></i>Start AI Chat Session
+    </a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

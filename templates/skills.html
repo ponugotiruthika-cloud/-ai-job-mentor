@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Skill Development — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <div class="page-header mb-4">
+    <h2 class="fw-bold mb-1"><i class="bi bi-mortarboard me-2 text-success"></i>Skill Development</h2>
+    <p class="text-muted mb-0">Free & paid courses to boost your career — PMKVY, Skill India, NSDC and more</p>
+  </div>
+
+  <!-- PMKVY Highlight Banner -->
+  <div class="alert alert-success border-0 rounded-4 mb-4 d-flex align-items-center gap-3" style="background:linear-gradient(135deg,#d1fae5,#bbf7d0)">
+    <div class="fs-2">🏆</div>
+    <div>
+      <strong>PMKVY — Free Skill Certification Available!</strong>
+      <p class="mb-1 small">Pradhan Mantri Kaushal Vikas Yojana offers FREE skill training with government certification + ₹8,000 reward on completion.</p>
+      <a href="https://pmkvyofficial.org" target="_blank" class="btn btn-sm btn-success rounded-pill">Apply on PMKVY <i class="bi bi-box-arrow-up-right ms-1"></i></a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Filter by Worker Type</label>
+          <select class="form-select" id="workerTypeFilter" onchange="filterCourses()">
+            <option value="">All Worker Types</option>
+            {% for wt in worker_types %}
+            <option value="{{ wt }}" {% if wt == selected_type %}selected{% endif %}>{{ wt | replace('_',' ') | title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Fee</label>
+          <div class="btn-group w-100">
+            <button class="btn btn-outline-secondary active" id="fee-all" onclick="filterFee('all')">All</button>
+            <button class="btn btn-outline-success" id="fee-free" onclick="filterFee('free')">Free Only</button>
+            <button class="btn btn-outline-warning" id="fee-paid" onclick="filterFee('paid')">Paid</button>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <a href="{{ url_for('skills') }}" class="btn btn-outline-secondary w-100 rounded-pill">Reset Filters</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Course Cards -->
+  <div class="row g-4" id="courses-grid">
+    {% for course in courses %}
+    <div class="col-md-6 col-lg-4 animate-slide-up course-card-wrapper"
+         data-free="{{ 'true' if course.is_free else 'false' }}"
+         data-worker-types="{{ course.worker_types }}"
+         style="--delay: {{ loop.index * 0.08 }}s">
+      <div class="card border-0 shadow-sm rounded-4 h-100 hover-lift">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between mb-3">
+            <span class="badge {{ 'bg-success-subtle text-success' if course.is_free else 'bg-warning-subtle text-warning' }} rounded-pill px-3">
+              <i class="bi bi-{{ 'gift' if course.is_free else 'currency-rupee' }} me-1"></i>{{ 'Free' if course.is_free else 'Paid' }}
+            </span>
+            <span class="badge bg-light text-muted border">
+              <i class="bi bi-clock me-1"></i>{{ course.duration }}
+            </span>
+          </div>
+          <h5 class="fw-bold mb-2">{{ course.name }}</h5>
+          <p class="text-primary fw-semibold small mb-2">
+            <i class="bi bi-building me-1"></i>{{ course.provider }}
+          </p>
+          <p class="text-muted small mb-3">{{ (course.description or '')[:130] }}{% if (course.description or '') | length > 130 %}...{% endif %}</p>
+          {% if course.skill_tags %}
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            {% for tag in course.skill_tags.split(',')[:4] %}
+            <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px">{{ tag.strip() }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+          <div class="d-flex gap-2 mt-auto">
+            {% if course.url %}
+            <a href="{{ course.url }}" target="_blank" class="btn btn-sm btn-primary rounded-pill flex-grow-1">
+              Enroll Now <i class="bi bi-box-arrow-up-right ms-1"></i>
+            </a>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('chatbot') }}" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ask AI about this course">
+              <i class="bi bi-robot"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted">
+      <i class="bi bi-mortarboard fs-1"></i>
+      <p class="mt-2">No courses found. Try a different filter.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Learning Pathways -->
+  <div class="mt-5">
+    <h3 class="fw-bold mb-4">Learning Pathways</h3>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="pathway-card card border-0 rounded-4 p-4 h-100 text-center hover-lift" style="border-top: 4px solid var(--bs-primary) !important;">
+          <i class="bi bi-hammer fs-2 text-primary mb-3"></i>
+          <h6 class="fw-bold">Construction Worker</h6>
+          <div class="pathway-steps small text-muted">
+            Basic Safety → Masonry → Electrician → Site Supervisor
+          </div>
+          <a href="{{ url_for('skills') }}?worker_type=daily_wage" class="btn btn-sm btn-primary rounded-pill mt-3">Start Path</a>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="pathway-card card border-0 rounded-4 p-4 h-100 text-center hover-lift" style="border-top: 4px solid var(--bs-warning) !important;">
+          <i class="bi bi-palette fs-2 text-warning mb-3"></i>
+          <h6 class="fw-bold">Artisan & Craftsperson</h6>
+          <div class="pathway-steps small text-muted">
+            Craft Basics → Certification → E-commerce → Export
+          </div>
+          <a href="{{ url_for('skills') }}?worker_type=artisan" class="btn btn-sm btn-warning rounded-pill mt-3">Start Path</a>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="pathway-card card border-0 rounded-4 p-4 h-100 text-center hover-lift" style="border-top: 4px solid var(--bs-success) !important;">
+          <i class="bi bi-scooter fs-2 text-success mb-3"></i>
+          <h6 class="fw-bold">Gig Worker</h6>
+          <div class="pathway-steps small text-muted">
+            Digital Literacy → Gig Apps → Financial Planning → Own Business
+          </div>
+          <a href="{{ url_for('skills') }}?worker_type=gig_worker" class="btn btn-sm btn-success rounded-pill mt-3">Start Path</a>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="pathway-card card border-0 rounded-4 p-4 h-100 text-center hover-lift" style="border-top: 4px solid var(--bs-danger) !important;">
+          <i class="bi bi-shop fs-2 text-danger mb-3"></i>
+          <h6 class="fw-bold">Self-Employed</h6>
+          <div class="pathway-steps small text-muted">
+            Business Basics → PM SVANidhi → GST Compliance → Scale Up
+          </div>
+          <a href="{{ url_for('skills') }}?worker_type=self_employed" class="btn btn-sm btn-danger rounded-pill mt-3">Start Path</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let feeFilter = "all";
+
+function filterFee(mode) {
+  feeFilter = mode;
+  ["all","free","paid"].forEach(f => document.getElementById("fee-"+f)?.classList.remove("active"));
+  document.getElementById("fee-"+mode)?.classList.add("active");
+  applyFilters();
+}
+
+function filterCourses() { applyFilters(); }
+
+function applyFilters() {
+  const workerType = document.getElementById("workerTypeFilter").value;
+  document.querySelectorAll(".course-card-wrapper").forEach(card => {
+    const isFree = card.dataset.free === "true";
+    const workerTypes = card.dataset.workerTypes || "";
+    let show = true;
+    if (feeFilter === "free" && !isFree) show = false;
+    if (feeFilter === "paid" && isFree) show = false;
+    if (workerType && !workerTypes.includes(workerType)) show = false;
+    card.style.display = show ? "" : "none";
+  });
+}
+</script>
+{% endblock %}

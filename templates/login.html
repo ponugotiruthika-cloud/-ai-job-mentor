@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Login — {{ app_name }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+      <div class="card border-0 shadow-lg rounded-4 animate-fade-in">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <div class="fs-1 mb-2">🤝</div>
+            <h3 class="fw-bold">Welcome Back</h3>
+            <p class="text-muted small">Login to your AI Job Mentor account</p>
+          </div>
+          <form method="POST">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Email Address</label>
+              <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="bi bi-envelope text-muted"></i></span>
+                <input type="email" name="email" class="form-control" placeholder="you@example.com" required autofocus>
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-semibold small">Password</label>
+              <div class="input-group">
+                <span class="input-group-text bg-transparent"><i class="bi bi-lock text-muted"></i></span>
+                <input type="password" name="password" class="form-control" placeholder="Your password" required id="pwd-input">
+                <button type="button" class="btn btn-outline-secondary" onclick="togglePwd()">
+                  <i class="bi bi-eye" id="pwd-eye"></i>
+                </button>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </button>
+          </form>
+          <hr class="my-4 opacity-25">
+          <p class="text-center text-muted small mb-0">
+            New to {{ app_name }}?
+            <a href="{{ url_for('register') }}" class="fw-semibold text-primary">Create free account</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function togglePwd() {
+  const inp = document.getElementById("pwd-input");
+  const eye = document.getElementById("pwd-eye");
+  inp.type = inp.type === "password" ? "text" : "password";
+  eye.className = inp.type === "password" ? "bi bi-eye" : "bi bi-eye-slash";
+}
+</script>
+{% endblock %}

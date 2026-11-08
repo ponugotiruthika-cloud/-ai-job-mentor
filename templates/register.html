@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Register — {{ app_name }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="card border-0 shadow-lg rounded-4 animate-fade-in">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <div class="fs-1 mb-2">🤝</div>
+            <h3 class="fw-bold">Create Your Account</h3>
+            <p class="text-muted small">Free AI career guidance for every informal worker</p>
+          </div>
+          <form method="POST">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Full Name *</label>
+                <input type="text" name="name" class="form-control" placeholder="Your full name" required autofocus>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Phone Number</label>
+                <div class="input-group">
+                  <span class="input-group-text">+91</span>
+                  <input type="tel" name="phone" class="form-control" placeholder="9876543210">
+                </div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Email Address *</label>
+                <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Password *</label>
+                <input type="password" name="password" class="form-control" placeholder="Min. 8 characters" required minlength="8">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Worker Type *</label>
+                <select name="worker_type" class="form-select" required>
+                  <option value="daily_wage">Daily Wage Worker</option>
+                  <option value="artisan">Artisan / Craftsperson</option>
+                  <option value="gig_worker">Gig Worker</option>
+                  <option value="self_employed">Self-Employed</option>
+                  <option value="domestic_worker">Domestic Worker</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Your Skills (comma-separated)</label>
+                <input type="text" name="skills" class="form-control" placeholder="masonry, plumbing, cooking, driving...">
+              </div>
+              <div class="col-md-7">
+                <label class="form-label fw-semibold small">Location / City</label>
+                <input type="text" name="location" class="form-control" placeholder="Hyderabad, Telangana">
+              </div>
+              <div class="col-md-5">
+                <label class="form-label fw-semibold small">Language Preference</label>
+                <select name="language_pref" class="form-select">
+                  <option value="en">🇬🇧 English</option>
+                  <option value="hi">🇮🇳 हिन्दी</option>
+                  <option value="te">తెలుగు</option>
+                </select>
+              </div>
+              <div class="col-12 mt-1">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold">
+                  <i class="bi bi-person-plus me-2"></i>Create Free Account
+                </button>
+              </div>
+            </div>
+          </form>
+          <hr class="my-4 opacity-25">
+          <p class="text-center text-muted small mb-0">
+            Already have an account? <a href="{{ url_for('login') }}" class="fw-semibold text-primary">Login here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

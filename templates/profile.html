@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}My Profile — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+  <div class="row g-4">
+
+    <!-- Profile Edit Form -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+          <h4 class="fw-bold mb-0"><i class="bi bi-person-circle me-2 text-primary"></i>My Profile</h4>
+          <p class="text-muted small mt-1">Keep your profile updated for better job matches and scheme eligibility</p>
+        </div>
+        <div class="card-body p-4">
+          <form method="POST" action="{{ url_for('profile') }}" id="profile-form">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Full Name *</label>
+                <input type="text" name="name" class="form-control rounded-3" value="{{ current_user.name }}" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Email Address</label>
+                <input type="email" class="form-control rounded-3 bg-light" value="{{ current_user.email }}" disabled>
+                <div class="form-text">Email cannot be changed</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Phone Number</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-transparent">+91</span>
+                  <input type="tel" name="phone" class="form-control rounded-end" value="{{ current_user.phone or '' }}" placeholder="9876543210">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Worker Type *</label>
+                <select name="worker_type" class="form-select">
+                  {% for wt in worker_types %}
+                  <option value="{{ wt }}" {% if wt == current_user.worker_type %}selected{% endif %}>{{ wt | replace('_',' ') | title }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">Skills (comma-separated)</label>
+                <input type="text" name="skills" class="form-control rounded-3" value="{{ current_user.skills or '' }}"
+                       placeholder="masonry, plumbing, weaving, cooking, driving...">
+                <div class="form-text">Add all your skills for better job recommendations</div>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label fw-semibold small">Current Location / City</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-transparent"><i class="bi bi-geo-alt text-muted"></i></span>
+                  <input type="text" name="location" class="form-control rounded-end" value="{{ current_user.location or '' }}"
+                         placeholder="Hyderabad, Telangana" id="location-input">
+                  <button type="button" class="btn btn-outline-secondary" onclick="detectLocation()">
+                    <i class="bi bi-crosshair"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Preferred Min. Salary (₹)</label>
+                <input type="number" name="preferred_salary" class="form-control rounded-3"
+                       value="{{ current_user.preferred_salary or '' }}" placeholder="8000" min="0">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Preferred Language</label>
+                <select name="language_pref" class="form-select">
+                  <option value="en" {% if current_user.language_pref == 'en' %}selected{% endif %}>🇬🇧 English</option>
+                  <option value="hi" {% if current_user.language_pref == 'hi' %}selected{% endif %}>🇮🇳 Hindi (हिन्दी)</option>
+                  <option value="te" {% if current_user.language_pref == 'te' %}selected{% endif %}>తెలుగు Telugu</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Theme Preference</label>
+                <div class="form-check form-switch mt-2">
+                  <input class="form-check-input" type="checkbox" name="dark_mode" id="darkModeSwitch"
+                         {% if current_user.dark_mode %}checked{% endif %}>
+                  <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary rounded-pill px-5">
+                  <i class="bi bi-check2 me-2"></i>Save Changes
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Change Password -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+          <h5 class="fw-bold mb-0"><i class="bi bi-lock me-2 text-warning"></i>Change Password</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">New Password</label>
+              <input type="password" class="form-control rounded-3" placeholder="Min. 8 characters" id="new-password">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Confirm New Password</label>
+              <input type="password" class="form-control rounded-3" placeholder="Re-enter password" id="confirm-password">
+            </div>
+            <div class="col-12">
+              <button class="btn btn-warning rounded-pill px-4" onclick="changePassword()">
+                Update Password
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Profile Summary + Saved Jobs -->
+    <div class="col-lg-4">
+      <!-- Profile Card -->
+      <div class="card border-0 shadow-sm rounded-4 mb-4 text-center">
+        <div class="card-body p-4">
+          <div class="profile-avatar mx-auto mb-3 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width:80px;height:80px;font-size:2rem">
+            {{ current_user.name[0].upper() }}
+          </div>
+          <h5 class="fw-bold mb-1">{{ current_user.name }}</h5>
+          <p class="text-muted small mb-2">{{ current_user.email }}</p>
+          <span class="badge bg-primary-subtle text-primary rounded-pill mb-3">
+            {{ current_user.worker_type | replace('_',' ') | title }}
+          </span>
+          {% if current_user.location %}
+          <p class="small text-muted mb-1"><i class="bi bi-geo-alt me-1"></i>{{ current_user.location }}</p>
+          {% endif %}
+          {% if current_user.phone %}
+          <p class="small text-muted mb-1"><i class="bi bi-telephone me-1"></i>+91 {{ current_user.phone }}</p>
+          {% endif %}
+          <div class="mt-3 d-flex justify-content-center gap-3">
+            <div class="text-center">
+              <div class="fw-bold">{{ current_user.chats | length }}</div>
+              <div class="text-muted" style="font-size:11px">AI Chats</div>
+            </div>
+            <div class="vr"></div>
+            <div class="text-center">
+              <div class="fw-bold">{{ saved_jobs | length }}</div>
+              <div class="text-muted" style="font-size:11px">Saved Jobs</div>
+            </div>
+          </div>
+          <a href="{{ url_for('chatbot') }}" class="btn btn-primary w-100 mt-3 rounded-pill">
+            <i class="bi bi-robot me-2"></i>Chat with AI Mentor
+          </a>
+        </div>
+      </div>
+
+      <!-- Saved Jobs -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 pb-0">
+          <h6 class="fw-bold mb-0"><i class="bi bi-bookmark-fill me-2 text-primary"></i>Saved Jobs ({{ saved_jobs | length }})</h6>
+        </div>
+        <div class="list-group list-group-flush rounded-4">
+          {% for saved in saved_jobs[:5] %}
+          {% set job = saved.job_id %}
+          <div class="list-group-item border-0 px-4 py-3">
+            <div class="fw-semibold small">Saved Job #{{ saved.job_id }}</div>
+            <div class="text-muted" style="font-size:11px">Saved {{ saved.saved_at.strftime('%d %b') }}</div>
+          </div>
+          {% else %}
+          <div class="px-4 py-3 text-muted small">No saved jobs yet. <a href="{{ url_for('jobs') }}">Browse jobs</a>.</div>
+          {% endfor %}
+        </div>
+        {% if saved_jobs %}
+        <div class="card-footer bg-transparent border-0 pb-3 px-4">
+          <a href="{{ url_for('jobs') }}" class="btn btn-sm btn-outline-primary rounded-pill w-100">Browse More Jobs</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function detectLocation() {
+  if (!navigator.geolocation) { alert("Geolocation not supported."); return; }
+  navigator.geolocation.getCurrentPosition((pos) => {
+    const lat = pos.coords.latitude.toFixed(4);
+    const lon = pos.coords.longitude.toFixed(4);
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+      .then(r => r.json())
+      .then(data => {
+        const addr = data.address;
+        const loc = [addr.city || addr.town || addr.village, addr.state].filter(Boolean).join(", ");
+        document.getElementById("location-input").value = loc;
+      })
+      .catch(() => {
+        document.getElementById("location-input").value = `${lat}, ${lon}`;
+      });
+  }, () => alert("Location access denied."));
+}
+
+function changePassword() {
+  const p1 = document.getElementById("new-password").value;
+  const p2 = document.getElementById("confirm-password").value;
+  if (!p1 || p1.length < 8) { alert("Password must be at least 8 characters."); return; }
+  if (p1 !== p2) { alert("Passwords do not match."); return; }
+  alert("Password change functionality requires a separate API endpoint. Integrate with /api/change-password.");
+}
+</script>
+{% endblock %}

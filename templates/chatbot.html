@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}AI Career Mentor Chat — {{ app_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  #chat-container { height: calc(100vh - 260px); min-height: 400px; overflow-y: auto; scroll-behavior: smooth; }
+  .typing-indicator span { width:8px; height:8px; border-radius:50%; background:var(--bs-primary); display:inline-block; animation: blink 1.2s infinite; }
+  .typing-indicator span:nth-child(2) { animation-delay:.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay:.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+  .message-timestamp { font-size:10px; color:var(--bs-secondary); margin-top:2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <div class="row g-0" style="height:calc(100vh - 72px)">
+
+    <!-- Sidebar -->
+    <div class="col-lg-3 col-xl-2 chat-sidebar border-end d-none d-lg-flex flex-column py-3 px-3">
+      <h6 class="fw-bold mb-3 px-1"><i class="bi bi-robot me-2 text-primary"></i>AI Mentor</h6>
+      <div class="mb-3">
+        <p class="small text-muted mb-2">Language</p>
+        <div class="btn-group w-100" role="group">
+          <button class="btn btn-sm btn-outline-secondary lang-btn {% if current_user.language_pref == 'en' %}active{% endif %}" onclick="setChatLang('en')">EN</button>
+          <button class="btn btn-sm btn-outline-secondary lang-btn {% if current_user.language_pref == 'hi' %}active{% endif %}" onclick="setChatLang('hi')">HI</button>
+          <button class="btn btn-sm btn-outline-secondary lang-btn {% if current_user.language_pref == 'te' %}active{% endif %}" onclick="setChatLang('te')">TE</button>
+        </div>
+      </div>
+      <div class="mb-3">
+        <p class="small text-muted mb-2">Quick Prompts</p>
+        <div class="d-flex flex-column gap-2">
+          {% set prompts = [
+            ("Find jobs for me", "bi-search"),
+            ("What schemes am I eligible for?", "bi-bank"),
+            ("Suggest skill courses", "bi-mortarboard"),
+            ("How to earn more?", "bi-graph-up"),
+            ("Help with my resume", "bi-file-text"),
+          ] %}
+          {% for prompt, icon in prompts %}
+          <button class="btn btn-sm btn-outline-secondary text-start rounded-pill" onclick="sendPrompt('{{ prompt }}')">
+            <i class="bi {{ icon }} me-2"></i>{{ prompt }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="mt-auto">
+        <div class="small text-muted text-center">
+          <i class="bi bi-shield-check text-success me-1"></i>
+          Powered by IBM Watsonx.ai Granite
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="col-lg-9 col-xl-10 d-flex flex-column">
+      <!-- Chat Header -->
+      <div class="chat-header px-4 py-3 border-bottom d-flex align-items-center gap-3">
+        <div class="avatar-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:42px;height:42px">
+          <i class="bi bi-robot fs-5"></i>
+        </div>
+        <div>
+          <div class="fw-bold">AI Job Mentor</div>
+          <div class="small text-success d-flex align-items-center gap-1">
+            <span class="status-dot bg-success rounded-circle" style="width:7px;height:7px;display:inline-block"></span>
+            Online · IBM Watsonx.ai Granite
+          </div>
+        </div>
+        <div class="ms-auto d-flex gap-2">
+          <!-- Mobile Language Buttons -->
+          <div class="d-lg-none">
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-secondary lang-btn active" onclick="setChatLang('en')">EN</button>
+              <button class="btn btn-outline-secondary lang-btn" onclick="setChatLang('hi')">HI</button>
+              <button class="btn btn-outline-secondary lang-btn" onclick="setChatLang('te')">TE</button>
+            </div>
+          </div>
+          <!-- Voice Search -->
+          <button class="btn btn-sm btn-outline-danger rounded-pill" id="voice-btn" onclick="startVoiceInput()" title="Voice input">
+            <i class="bi bi-mic"></i> Voice
+          </button>
+          <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="clearChat()" title="Clear history">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="chat-container" class="flex-grow-1 px-4 py-3">
+        <!-- Greeting bubble -->
+        <div class="d-flex gap-3 mb-4">
+          <div class="flex-shrink-0 avatar-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:34px;height:34px">
+            <i class="bi bi-robot small"></i>
+          </div>
+          <div>
+            <div class="chat-bubble ai-bubble">{{ greeting }}</div>
+            <div class="message-timestamp">Now</div>
+          </div>
+        </div>
+
+        <!-- History -->
+        {% for msg in history %}
+        <div class="d-flex gap-3 mb-3 {% if msg.role == 'user' %}flex-row-reverse{% endif %}">
+          <div class="flex-shrink-0 avatar-icon rounded-circle d-flex align-items-center justify-content-center
+               {% if msg.role == 'user' %}bg-success text-white{% else %}bg-primary text-white{% endif %}"
+               style="width:34px;height:34px">
+            <i class="bi bi-{% if msg.role == 'user' %}person{% else %}robot{% endif %} small"></i>
+          </div>
+          <div class="{% if msg.role == 'user' %}text-end{% endif %}">
+            <div class="chat-bubble {% if msg.role == 'user' %}user-bubble{% else %}ai-bubble{% endif %}">
+              {{ msg.message | replace('\n', '<br>') | safe }}
+            </div>
+            <div class="message-timestamp">{{ msg.timestamp.strftime('%H:%M') }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Input Area -->
+      <div class="chat-input-area px-4 py-3 border-top">
+        <div class="d-flex gap-2 align-items-end">
+          <div class="flex-grow-1">
+            <textarea id="chat-input" class="form-control rounded-3" rows="1" placeholder="Type your message in English, Hindi or Telugu..."
+                      onkeydown="handleEnter(event)" oninput="autoResize(this)" style="resize:none;max-height:120px"></textarea>
+          </div>
+          <button class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" id="send-btn" onclick="sendMessage()" style="width:44px;height:44px">
+            <i class="bi bi-send"></i>
+          </button>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <div class="small text-muted">
+            <i class="bi bi-translate me-1"></i>Chatting in: <span id="current-lang-label">English</span>
+          </div>
+          <div class="small text-muted" id="voice-status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentLang = "{{ current_user.language_pref }}";
+const langLabels = { en: "English", hi: "हिन्दी", te: "తెలుగు" };
+
+function setChatLang(lang) {
+  currentLang = lang;
+  document.getElementById("current-lang-label").textContent = langLabels[lang];
+  document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".lang-btn").forEach(b => {
+    if (b.textContent.trim().toLowerCase() === lang.toUpperCase()) b.classList.add("active");
+  });
+}
+
+function sendPrompt(prompt) {
+  document.getElementById("chat-input").value = prompt;
+  sendMessage();
+}
+
+function handleEnter(e) {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 120) + "px";
+}
+
+function appendMessage(role, text, time) {
+  const container = document.getElementById("chat-container");
+  const isUser = role === "user";
+  const ts = time || new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  const html = `
+    <div class="d-flex gap-3 mb-3 ${isUser ? "flex-row-reverse" : ""} animate-fade-in">
+      <div class="flex-shrink-0 avatar-icon rounded-circle d-flex align-items-center justify-content-center
+           ${isUser ? "bg-success text-white" : "bg-primary text-white"}" style="width:34px;height:34px">
+        <i class="bi bi-${isUser ? "person" : "robot"} small"></i>
+      </div>
+      <div class="${isUser ? "text-end" : ""}">
+        <div class="chat-bubble ${isUser ? "user-bubble" : "ai-bubble"}">${text.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")}</div>
+        <div class="message-timestamp">${ts}</div>
+      </div>
+    </div>`;
+  container.insertAdjacentHTML("beforeend", html);
+  container.scrollTop = container.scrollHeight;
+}
+
+function showTyping() {
+  document.getElementById("chat-container").insertAdjacentHTML("beforeend", `
+    <div id="typing-indicator" class="d-flex gap-3 mb-3">
+      <div class="flex-shrink-0 avatar-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:34px;height:34px">
+        <i class="bi bi-robot small"></i>
+      </div>
+      <div class="chat-bubble ai-bubble typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    </div>`);
+  document.getElementById("chat-container").scrollTop = 999999;
+}
+
+function removeTyping() {
+  const ind = document.getElementById("typing-indicator");
+  if (ind) ind.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = "";
+  input.style.height = "auto";
+  document.getElementById("send-btn").disabled = true;
+  appendMessage("user", msg);
+  showTyping();
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({message: msg, language: currentLang})
+    });
+    const data = await res.json();
+    removeTyping();
+    appendMessage("assistant", data.response || data.error);
+  } catch(e) {
+    removeTyping();
+    appendMessage("assistant", "⚠️ Connection error. Please try again.");
+  }
+  document.getElementById("send-btn").disabled = false;
+}
+
+function clearChat() {
+  if (!confirm("Clear chat history?")) return;
+  document.getElementById("chat-container").innerHTML = `
+    <div class="d-flex gap-3 mb-4">
+      <div class="flex-shrink-0 avatar-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:34px;height:34px">
+        <i class="bi bi-robot small"></i>
+      </div>
+      <div><div class="chat-bubble ai-bubble">Chat cleared. How can I help you?</div></div>
+    </div>`;
+}
+
+// Voice Search
+function startVoiceInput() {
+  const voiceStatus = document.getElementById("voice-status");
+  if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+    voiceStatus.textContent = "Voice not supported in this browser.";
+    return;
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const rec = new SpeechRecognition();
+  const langMap = { en: "en-IN", hi: "hi-IN", te: "te-IN" };
+  rec.lang = langMap[currentLang] || "en-IN";
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.onstart = () => {
+    document.getElementById("voice-btn").innerHTML = '<i class="bi bi-mic-fill text-danger"></i> Listening...';
+    voiceStatus.innerHTML = '<i class="bi bi-mic-fill text-danger me-1"></i>Listening...';
+  };
+  rec.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    document.getElementById("chat-input").value = transcript;
+    voiceStatus.textContent = "";
+    document.getElementById("voice-btn").innerHTML = '<i class="bi bi-mic"></i> Voice';
+    sendMessage();
+  };
+  rec.onerror = () => {
+    voiceStatus.textContent = "Voice error. Try again.";
+    document.getElementById("voice-btn").innerHTML = '<i class="bi bi-mic"></i> Voice';
+  };
+  rec.onend = () => {
+    document.getElementById("voice-btn").innerHTML = '<i class="bi bi-mic"></i> Voice';
+  };
+  rec.start();
+}
+
+// Scroll to bottom on load
+document.getElementById("chat-container").scrollTop = 999999;
+</script>
+{% endblock %}

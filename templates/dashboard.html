@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <!-- Welcome Banner -->
+  <div class="dashboard-welcome-banner rounded-4 p-4 mb-4 animate-fade-in">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h3 class="fw-bold mb-1">
+          Welcome back, {{ current_user.name }}! 👋
+        </h3>
+        <p class="mb-2 opacity-75">
+          <i class="bi bi-geo-alt me-1"></i>{{ current_user.location or 'Location not set' }} &nbsp;·&nbsp;
+          <i class="bi bi-person-badge me-1"></i>{{ current_user.worker_type | replace('_', ' ') | title }}
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-2">
+          {% if current_user.skills %}
+            {% for skill in current_user.skills.split(',')[:5] %}
+            <span class="badge bg-white bg-opacity-25 text-white border border-white border-opacity-25 rounded-pill">{{ skill.strip() }}</span>
+            {% endfor %}
+          {% else %}
+            <a href="{{ url_for('profile') }}" class="badge bg-white bg-opacity-25 text-white border border-white border-opacity-25 rounded-pill text-decoration-none">
+              + Add your skills
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('chatbot') }}" class="btn btn-white btn-lg shadow-sm">
+          <i class="bi bi-robot me-2"></i>Ask AI Mentor
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card card border-0 rounded-4 p-3 h-100 text-center hover-lift" id="stat-recommendations">
+        <div class="stat-icon text-primary mb-2"><i class="bi bi-stars fs-2"></i></div>
+        <div class="fs-4 fw-bold" id="rec-count">—</div>
+        <div class="small text-muted">Job Matches</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card card border-0 rounded-4 p-3 h-100 text-center hover-lift">
+        <div class="stat-icon text-success mb-2"><i class="bi bi-bookmark-check fs-2"></i></div>
+        <div class="fs-4 fw-bold">{{ current_user.saved_jobs | length }}</div>
+        <div class="small text-muted">Saved Jobs</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card card border-0 rounded-4 p-3 h-100 text-center hover-lift">
+        <div class="stat-icon text-warning mb-2"><i class="bi bi-chat-dots fs-2"></i></div>
+        <div class="fs-4 fw-bold">{{ current_user.chats | length }}</div>
+        <div class="small text-muted">AI Chats</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card card border-0 rounded-4 p-3 h-100 text-center hover-lift">
+        <div class="stat-icon text-danger mb-2"><i class="bi bi-mortarboard fs-2"></i></div>
+        <div class="fs-4 fw-bold">{{ courses | length }}</div>
+        <div class="small text-muted">Courses For You</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- AI Recommendations Panel -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0"><i class="bi bi-stars me-2 text-warning"></i>AI Job Recommendations</h5>
+          <a href="{{ url_for('jobs') }}" class="btn btn-sm btn-outline-primary rounded-pill">View All</a>
+        </div>
+        <div class="card-body p-4">
+          <div id="ai-recommendations-container">
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status"></div>
+              <p class="text-muted mt-2 small">Loading personalised recommendations...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Latest Jobs for Your Type -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold mb-0"><i class="bi bi-briefcase me-2 text-primary"></i>Jobs for {{ current_user.worker_type | replace('_', ' ') | title }}</h5>
+          <a href="{{ url_for('jobs') }}?worker_type={{ current_user.worker_type }}" class="btn btn-sm btn-outline-primary rounded-pill">More</a>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            {% for job in jobs %}
+            <div class="col-md-6">
+              <div class="job-card-mini card border rounded-3 p-3 hover-lift h-100">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="badge bg-primary-subtle text-primary small">{{ job.job_type | replace('_',' ') | title }}</span>
+                  {% if job.is_verified %}<i class="bi bi-shield-check text-success" title="Verified"></i>{% endif %}
+                </div>
+                <h6 class="fw-bold mb-1">{{ job.title }}</h6>
+                <p class="text-muted small mb-1"><i class="bi bi-geo-alt me-1"></i>{{ job.location }}</p>
+                <p class="text-success fw-semibold small mb-2">
+                  ₹{{ job.salary_min | currency_inr }} – {{ job.salary_max | currency_inr }}
+                </p>
+                <div class="d-flex gap-2 mt-auto">
+                  <a href="{{ url_for('jobs') }}?q={{ job.title }}" class="btn btn-sm btn-primary rounded-pill flex-grow-1">Apply</a>
+                  <button class="btn btn-sm btn-outline-secondary rounded-pill save-job-btn" data-job-id="{{ job.id }}" title="Save job">
+                    <i class="bi bi-bookmark"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-muted text-center py-3">No jobs found yet. <a href="{{ url_for('jobs') }}">Browse all jobs</a>.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="col-lg-4">
+      <!-- AI Mentor Quick Chat -->
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-3"><i class="bi bi-robot me-2 text-primary"></i>Quick AI Chat</h6>
+          <div class="quick-chat-box mb-3" id="quick-chat-messages">
+            <div class="chat-bubble ai-bubble small">
+              {{ agent_config.greetings.get(current_user.language_pref, agent_config.greetings.en) }}
+            </div>
+          </div>
+          <div class="input-group input-group-sm">
+            <input type="text" class="form-control rounded-start-pill" id="quick-chat-input"
+                   placeholder="Ask anything..." onkeypress="if(event.key==='Enter') sendQuickChat()">
+            <button class="btn btn-primary rounded-end-pill" onclick="sendQuickChat()">
+              <i class="bi bi-send"></i>
+            </button>
+          </div>
+          <a href="{{ url_for('chatbot') }}" class="btn btn-sm btn-outline-primary d-block mt-2 rounded-pill">
+            Open Full Chat <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Nearby Jobs (Location-based) -->
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-3"><i class="bi bi-geo-alt me-2 text-danger"></i>Jobs Near You</h6>
+          <div id="nearby-jobs-list">
+            <div class="text-center py-3 text-muted small">
+              <button class="btn btn-sm btn-outline-primary rounded-pill" onclick="loadNearbyJobs()">
+                <i class="bi bi-crosshair me-1"></i>Find Nearby Jobs
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Government Schemes -->
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 pb-0">
+          <h6 class="fw-bold mb-0"><i class="bi bi-bank me-2 text-warning"></i>Your Schemes</h6>
+        </div>
+        <div class="list-group list-group-flush rounded-4">
+          {% for scheme in schemes %}
+          <a href="{{ url_for('schemes') }}" class="list-group-item list-group-item-action border-0 px-4 py-3">
+            <div class="fw-semibold small">{{ scheme.name[:40] }}{% if scheme.name|length > 40 %}...{% endif %}</div>
+            <span class="badge bg-warning-subtle text-warning mt-1">{{ scheme.category }}</span>
+          </a>
+          {% else %}
+          <div class="px-4 py-3 text-muted small">No schemes matched. <a href="{{ url_for('schemes') }}">Browse all</a>.</div>
+          {% endfor %}
+        </div>
+        <div class="card-footer bg-transparent border-0 pb-3 px-4">
+          <a href="{{ url_for('schemes') }}" class="btn btn-sm btn-outline-warning rounded-pill w-100">View All Schemes</a>
+        </div>
+      </div>
+
+      <!-- Skill Courses -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 pb-0">
+          <h6 class="fw-bold mb-0"><i class="bi bi-mortarboard me-2 text-success"></i>Courses For You</h6>
+        </div>
+        <div class="list-group list-group-flush rounded-4">
+          {% for course in courses %}
+          <a href="{{ url_for('skills') }}" class="list-group-item list-group-item-action border-0 px-4 py-3">
+            <div class="fw-semibold small">{{ course.name[:45] }}{% if course.name|length > 45 %}...{% endif %}</div>
+            <div class="d-flex gap-2 mt-1">
+              <span class="badge bg-{{ 'success' if course.is_free else 'secondary' }}-subtle text-{{ 'success' if course.is_free else 'secondary' }} small">{{ 'Free' if course.is_free else 'Paid' }}</span>
+              <span class="badge bg-light text-muted small">{{ course.duration }}</span>
+            </div>
+          </a>
+          {% else %}
+          <div class="px-4 py-3 text-muted small">No courses. <a href="{{ url_for('skills') }}">Browse all</a>.</div>
+          {% endfor %}
+        </div>
+        <div class="card-footer bg-transparent border-0 pb-3 px-4">
+          <a href="{{ url_for('skills') }}" class="btn btn-sm btn-outline-success rounded-pill w-100">All Courses</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const USER_WORKER_TYPE = "{{ current_user.worker_type }}";
+const USER_LANG = "{{ current_user.language_pref }}";
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadAIRecommendations();
+});
+
+async function loadAIRecommendations() {
+  try {
+    const res = await fetch("/api/recommendations");
+    const jobs = await res.json();
+    const container = document.getElementById("ai-recommendations-container");
+    document.getElementById("rec-count").textContent = jobs.length;
+    if (!jobs.length) {
+      container.innerHTML = '<p class="text-muted text-center py-3">No matches yet. <a href="/profile">Update your skills</a>.</p>';
+      return;
+    }
+    container.innerHTML = jobs.map(j => `
+      <div class="d-flex align-items-start gap-3 p-3 mb-2 rounded-3 border hover-lift">
+        <div class="flex-shrink-0 icon-circle bg-primary-subtle text-primary">
+          <i class="bi bi-briefcase"></i>
+        </div>
+        <div class="flex-grow-1 min-w-0">
+          <div class="fw-semibold">${j.title}</div>
+          <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>${j.location}</div>
+          <div class="text-success small fw-semibold">₹${j.salary_min.toLocaleString('en-IN')} – ₹${j.salary_max.toLocaleString('en-IN')}</div>
+        </div>
+        ${j.is_verified ? '<span class="badge bg-success-subtle text-success align-self-start"><i class="bi bi-shield-check me-1"></i>Verified</span>' : ''}
+      </div>`).join("");
+  } catch(e) {
+    document.getElementById("ai-recommendations-container").innerHTML = '<p class="text-danger small">Could not load recommendations.</p>';
+  }
+}
+
+async function loadNearbyJobs() {
+  const list = document.getElementById("nearby-jobs-list");
+  list.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-primary"></div><p class="small text-muted mt-1">Locating you...</p></div>';
+  if (!navigator.geolocation) {
+    list.innerHTML = '<p class="text-muted small px-2">Geolocation not supported. <a href="/jobs">Browse all jobs</a>.</p>';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const res = await fetch(`/api/jobs/nearby?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+      const jobs = await res.json();
+      if (!jobs.length) {
+        list.innerHTML = '<p class="text-muted small px-2">No nearby jobs found.</p>';
+        return;
+      }
+      list.innerHTML = jobs.slice(0,4).map(j => `
+        <div class="d-flex align-items-center gap-2 p-2 mb-1 rounded-3 border-bottom">
+          <i class="bi bi-geo-alt text-danger flex-shrink-0"></i>
+          <div class="min-w-0">
+            <div class="small fw-semibold text-truncate">${j.title}</div>
+            <div class="text-muted" style="font-size:11px">${j.location}</div>
+          </div>
+        </div>`).join("") + `<a href="/jobs" class="btn btn-sm btn-outline-danger rounded-pill d-block mt-2">View All Nearby</a>`;
+    } catch(e) { list.innerHTML = '<p class="text-danger small">Could not load nearby jobs.</p>'; }
+  }, () => { list.innerHTML = '<p class="text-muted small px-2">Location access denied. <a href="/jobs">Browse all</a>.</p>'; });
+}
+
+async function sendQuickChat() {
+  const input = document.getElementById("quick-chat-input");
+  const msg = input.value.trim();
+  if (!msg) return;
+  const container = document.getElementById("quick-chat-messages");
+  container.innerHTML += `<div class="chat-bubble user-bubble small mt-2">${msg}</div>`;
+  input.value = "";
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({message: msg, language: USER_LANG})
+    });
+    const data = await res.json();
+    container.innerHTML += `<div class="chat-bubble ai-bubble small mt-2">${data.response}</div>`;
+    container.scrollTop = container.scrollHeight;
+  } catch(e) {
+    container.innerHTML += '<div class="chat-bubble ai-bubble small mt-2 text-danger">Error — try again.</div>';
+  }
+}
+</script>
+{% endblock %}

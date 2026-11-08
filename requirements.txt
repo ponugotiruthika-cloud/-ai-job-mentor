@@ -1,0 +1,18 @@
+# Core dependencies (version-pinned for stability)
+setuptools>=70.0
+Flask>=3.0
+Flask-SQLAlchemy>=3.1
+Flask-Login>=0.6
+Flask-WTF>=1.2
+Werkzeug>=3.0
+python-dotenv>=1.0
+SQLAlchemy>=2.0
+requests>=2.31
+gunicorn>=22.0
+python-dateutil>=2.9
+
+# IBM Watsonx.ai — install separately if needed:
+#   pip install ibm-watsonx-ai ibm-cloud-sdk-core
+# Commented out here to avoid build errors on Python 3.14+
+# ibm-watsonx-ai>=1.1.2
+# ibm-cloud-sdk-core>=3.20.3
